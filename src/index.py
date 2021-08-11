@@ -12,6 +12,11 @@ from shutil import copy
 
 import sqlite3, json, os
 
+
+# PLUGIN
+import plugin.printerConn.script
+from plugin.receiptMaker.script import ReceiptMaker
+
 # pyinstaller --icon=./dataico.ico --noconsole --add-data './readme.txt;.' --add-data './data/delete.log;data' --add-data './data/ico.ico;data' index.py
 
 db_pathName = './data/database.db'
@@ -78,49 +83,53 @@ class AppOpen:
         
         # self.root_window.iconphoto(True, tk.PhotoImage(file='./data/ico.ico'))
         
+        # self.root_window.iconbitmap('@./data/ico.ico')
+
+        self.root_window.iconbitmap('./data/ico.ico')
+
 
         self.root_window.bind("<F11>", lambda event: self.toggle_fullScreen())
         self.root_window.bind("<f>", lambda event: self.toggle_fullScreen())
         self.root_window.bind("<Control-e>", lambda event: self.root_window.destroy())
 
-        # self.root_window.iconbitmap('@./data/ico.ico')
+        
         self.root_window.focus_force()
         #More option Buttons
-        addProduct_open_window = tk.Button(self.root_window, text = '添加', padx = 25, cursor = 'hand2', command = lambda : self.open_newWindowConfig('add'))
+        addProduct_open_window = tk.Button(self.root_window, text = '添加', padx = 20, cursor = 'hand2', command = lambda : self.open_newWindowConfig('add'))
         addProduct_open_window.grid(row = 0, column = 0) #Add products
         #FastKey
         self.root_window.bind("<Control-t>", lambda event: self.open_newWindowConfig('add'))
         CreateToolTip(addProduct_open_window, text = '打开添加新物品页面。可用Ctrl+t键，快开启')
 
-        changeProduct_open_window = tk.Button(self.root_window, text = '更改', padx = 25, cursor = 'hand2', command = lambda : self.open_newWindowConfig('change'))
+        changeProduct_open_window = tk.Button(self.root_window, text = '更改', padx = 20, cursor = 'hand2', command = lambda : self.open_newWindowConfig('change'))
         changeProduct_open_window.grid(row = 0, column = 1) #Modify and delete product
         #FastKey
         self.root_window.bind("<Control-k>", lambda event: self.open_newWindowConfig('change'))
         CreateToolTip(changeProduct_open_window, text = '更改和查看物品。可用Ctrl+k键，快开启')
 
-        self.root_window_fullScreenButton = tk.Button(self.root_window, text= '页面变大',padx = 25, cursor = 'hand2', command = self.toggle_fullScreen)
+        self.root_window_fullScreenButton = tk.Button(self.root_window, text= '页面变大',padx = 20, cursor = 'hand2', command = self.toggle_fullScreen)
         self.root_window_fullScreenButton.grid(row = 0, column = 2, padx = (20, 0)) #Full Screen
 
-        helpProduct_open_window = tk.Button(self.root_window, text = '帮助', padx = 25, cursor = 'hand2', command = lambda : self.open_newWindowConfig('help'))
+        helpProduct_open_window = tk.Button(self.root_window, text = '帮助', padx = 20, cursor = 'hand2', command = lambda : self.open_newWindowConfig('help'))
         helpProduct_open_window.grid(row = 0, column = 3, padx = (0, 20)) #Help 
         #FastKey
         self.root_window.bind("<Control-h>", lambda event: self.open_newWindowConfig('help'))
         CreateToolTip(helpProduct_open_window, text = '帮助页面。可用Ctrl+h键，快开启')
 
-        autoRepair_button = tk.Button(self.root_window, text = '自修', padx = 25, cursor = 'hand2', command = self.auto_repair)
-        autoRepair_button.grid(row = 0, column = 4, padx = 35) #Auto repair
+        autoRepair_button = tk.Button(self.root_window, text = '自修', padx = 20, cursor = 'hand2', command = self.auto_repair)
+        autoRepair_button.grid(row = 0, column = 4, padx = 15) #Auto repair
 
-        history_button = tk.Button(self.root_window, text = '查看销售记录', padx = 25, cursor = 'hand2', command = lambda : self.open_newWindowConfig('history'))
-        history_button.grid(row = 0, column = 5, padx = 35) #Sended history
+        history_button = tk.Button(self.root_window, text = '查看销售记录', padx = 20, cursor = 'hand2', command = lambda : self.open_newWindowConfig('history'))
+        history_button.grid(row = 0, column = 5, padx = 15) #Sended history
         #FastKey
         self.root_window.bind("<Control-j>", lambda event: self.open_newWindowConfig('history'))
         CreateToolTip(history_button, text = '此页面可查看所有卖出去的客人记录。快速键 Ctrl+j， 可快速打开')
         
-        backup_button = tk.Button(self.root_window, text = '备份', padx = 25, cursor = 'hand2', command = lambda : self.copy_db())
-        backup_button.grid(row = 0, column = 6, padx = 35) #Sended history
+        backup_button = tk.Button(self.root_window, text = '备份', padx = 20, cursor = 'hand2', command = lambda : self.copy_db())
+        backup_button.grid(row = 0, column = 6, padx = 25) #Sended history
         #FastKey
         self.root_window.bind("<Control-b>", lambda event: self.copy_db())
-        CreateToolTip(history_button, text = '备份数据库。快速键 Ctrl+b， 可快速打开')
+        CreateToolTip(backup_button, text = '备份数据库。快速键 Ctrl+b， 可快速打开')
         
         #FullScreen Button ToolTips
         CreateToolTip(self.root_window_fullScreenButton, text = '按F11或者F可变大/小')
@@ -181,27 +190,27 @@ class AppOpen:
 
 
         # Free price
-        freePrice = tk.Button(self.root_window, text = '自由价格', cursor = 'hand2', command = lambda : newAPP())
+        freePrice = tk.Button(self.root_window, text = '自由价格', cursor = 'hand2', command = lambda : self.freeProduct())
         freePrice.grid(row = 4, column = 1, pady = (10, 0), sticky = tk.W + tk.E)
         #FastKey
-        self.root_window.bind("<Control-l>", lambda event: newAPP())
+        self.root_window.bind("<Control-l>", lambda event: self.freeProduct())
         CreateToolTip(freePrice, text = '输入自由价格。可用Ctrl+l键，快开启')
 
         root_window_tableProductsDelete = tk.Button(self.root_window, text = '删除', padx = 40, cursor = 'hand2', command = self.removeProduct_addToPay)
-        root_window_tableProductsDelete.grid(row = 4, column = 135, pady = (10, 0))
+        root_window_tableProductsDelete.grid(row = 4, column = 8, pady = (10, 0))
         #FastKey
         self.root_window.bind("<Delete>", lambda event: self.removeProduct_addToPay())
         CreateToolTip(root_window_tableProductsDelete, text = '可用Delete键，快速删除')
         
         root_window_tableProductsChange = tk.Button(self.root_window, text = '更改数量', padx = 40, cursor = 'hand2', command = lambda : self.to_open_amountTable_number())
-        root_window_tableProductsChange.grid(row = 4, column = 145, pady = (10, 0))
+        root_window_tableProductsChange.grid(row = 4, column = 9, pady = (10, 0))
         #FastKey
         self.root_window.bind("<F10>", lambda event: self.to_open_amountTable_number())
         CreateToolTip(root_window_tableProductsChange, text = '可用F10键，快速更改')
 
         #Total Price
         root_window_priceFrame = tk.Frame(self.root_window, bg = "#fff", borderwidth = 3, relief= tk.RAISED)
-        root_window_priceFrame.grid(row = 2, column = 80, sticky = tk.W + tk.E, pady = 20)
+        root_window_priceFrame.grid(row = 2, column = 7, sticky = tk.W + tk.E, pady = 20)
 
         tk.Label(root_window_priceFrame, text ="总共: ", bg = '#fff', anchor = tk.W, font = ("", 20, "bold")).grid(row = 0, column = 0, sticky = tk.N + tk.S, padx = 15, pady = 20)
         self.root_window_totalPrice = tk.Label(root_window_priceFrame, text ="0.00", bg = '#fff', anchor = tk.E, font = ("", 20))
@@ -279,8 +288,135 @@ class AppOpen:
             if type == 'amount_product':
                 if self.root_window_firstLabelFrame_code.get() != "" and self.root_window_firstLabelFrame_code.get().isnumeric():
                     self.open_amountTable_number(False)
-                    
-                        
+
+
+
+    # Every product has an code for control so, the free prices product must have one to delete and remove then in the call
+    # The code is 自由价格x
+
+    freeProductIndex = 0
+
+    # The function
+               
+    def freeProduct(self):
+        if not self.second_windowOpen:
+
+
+            # Level status
+
+            self.levelStatus = 0
+
+            #Only can open one
+            #Check if it's openned
+            self.second_windowOpen = True
+
+            self.second_window = tk.Toplevel()
+            self.second_window.title('自由价格')
+            def closeSecond_window():
+                self.second_windowOpen = False
+                self.root_window_firstLabelFrame_code.focus()
+                self.second_window.destroy()
+                            
+            self.second_window.protocol("WM_DELETE_WINDOW", closeSecond_window)
+            self.second_window.focus_force()
+
+            #Title
+            tk.Label(self.second_window, text = '自由价格', font = ('times', 18), anchor = tk.CENTER).grid(row = 0, column = 0, columnspan = 2, sticky = tk.W + tk.E)
+            #---------------------------------
+            second_window_firstLabelFrame = tk.LabelFrame(self.second_window, text = '输入数量和名称', padx = 20, pady = 20)
+            second_window_firstLabelFrame.grid(row = 1, column = 0, pady = 30, columnspan = 2, sticky = tk.W + tk.E, padx = 20)
+
+            #amount
+            tk.Label(second_window_firstLabelFrame, text = '数量: ', font = ('', 14, 'bold')).grid(row = 0, column = 0, padx = (0, 15))
+            second_window_firstLabelFrame_amount = tk.Entry(second_window_firstLabelFrame, width = 50)
+            second_window_firstLabelFrame_amount.insert(tk.END, '1')
+            second_window_firstLabelFrame_amount.grid(row = 0, column = 1, padx = 5)
+
+
+            #name
+            tk.Label(second_window_firstLabelFrame, text = '名称: ', font = ('', 14, 'bold')).grid(row = 1, column = 0, padx = (0, 15))
+            second_window_firstLabelFrame_name = tk.Entry(second_window_firstLabelFrame, width = 50)
+            second_window_firstLabelFrame_name.grid(row = 1, column = 1, padx = 5)
+            #focus
+            second_window_firstLabelFrame_name.focus_force()
+
+            #----------------------------------
+            second_window_secondLabelFrame = tk.LabelFrame(self.second_window, text = '输入价格', padx = 20, pady = 20)
+            second_window_secondLabelFrame.grid(row = 2, column = 0, pady = 30, sticky = tk.W + tk.E, padx = 20)
+
+            second_window_secondLabelFrame_price = tk.Entry(second_window_secondLabelFrame,)
+            second_window_secondLabelFrame_price.grid(row = 0, column = 0, padx = 5, pady = 5, sticky = tk.W + tk.E)
+
+            number_button_frame = tk.Frame(second_window_secondLabelFrame)
+            number_button_frame.grid(row = 1, column = 0, padx = 5, pady = 5)
+
+            def amountInputButton(number):
+                if number == 'del':
+                    second_window_secondLabelFrame_price.delete(len(second_window_secondLabelFrame_price.get())-1)
+                else:
+                    second_window_secondLabelFrame_price.insert(tk.END, number) 
+
+            tk.Button(number_button_frame, text = 7, cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton(7)).grid(row = 0, column = 0, padx = 5, pady = 5)
+            tk.Button(number_button_frame, text = 8, cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton(8)).grid(row = 0, column = 1, padx = 5, pady = 5)
+            tk.Button(number_button_frame, text = 9, cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton(9)).grid(row = 0, column = 2, padx = 5, pady = 5)
+                                #----------
+            tk.Button(number_button_frame, text = 4, cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton(4)).grid(row = 1, column = 0, padx = 5, pady = 5)
+            tk.Button(number_button_frame, text = 5, cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton(5)).grid(row = 1, column = 1, padx = 5, pady = 5)
+            tk.Button(number_button_frame, text = 6, cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton(6)).grid(row = 1, column = 2, padx = 5, pady = 5)
+                                #----------
+            tk.Button(number_button_frame, text = 1, cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton(1)).grid(row = 2, column = 0, padx = 5, pady = 5)
+            tk.Button(number_button_frame, text = 2, cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton(2)).grid(row = 2, column = 1, padx = 5, pady = 5)
+            tk.Button(number_button_frame, text = 3, cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton(3)).grid(row = 2, column = 2, padx = 5, pady = 5)
+                                #----------
+            tk.Button(number_button_frame, text = 0, cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton(0)).grid(row = 3, column = 0, padx = 5, pady = 5)
+            tk.Button(number_button_frame, text = '.', cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton('.')).grid(row = 3, column = 1, padx = 5, pady = 5)
+            tk.Button(number_button_frame, text = '删除', cursor = 'hand2', pady = 5, padx = 8, font = ('consolas', 10, 'bold'), command = lambda : amountInputButton('del')).grid(row = 3, column = 2, padx = 5, pady = 5)
+            #------------------------
+
+
+            # Add to table and then can load into the receipt
+            def addProductFnc():
+
+                if second_window_firstLabelFrame_amount.get() and second_window_secondLabelFrame_price.get():
+                    amount = int(second_window_firstLabelFrame_amount.get())
+                    name = second_window_firstLabelFrame_name.get()
+                    price = float(second_window_secondLabelFrame_price.get())
+
+                    totalPrice = float("{:.2f}".format(price*amount))
+
+                    self.root_window_tableProducts.insert('', tk.END, text = '自由价格{}'.format(self.freeProductIndex), values = (name, price, int(amount), totalPrice))
+                    self.totalPrice_arr_toPay['自由价格{}'.format(self.freeProductIndex)] = "{:.2f}".format(totalPrice)
+                    self.root_window_totalPrice['text'] = self.calc_totalPrice()
+
+                    # Plus one index for free products
+                    self.freeProductIndex = self.freeProductIndex + 1
+
+                    self.root_window_firstLabelFrame_code.focus()
+                    self.second_window.destroy()
+                    self.second_windowOpen = False
+
+
+            #-----------------------
+            def nextLevel():
+                second_window_secondLabelFrame_price.focus_force()
+                self.levelStatus = 1
+
+
+            number_continue_frame = tk.Frame(self.second_window)
+            number_continue_frame.grid(row = 2, column = 1, padx = 5, pady = 30, sticky = tk.W + tk.E + tk.N + tk.S)
+
+            addProduct = tk.Button(number_continue_frame, text = '添加', cursor = 'hand2', font = ('', 10, 'bold'), width = 10, command = addProductFnc)
+            addProduct.pack(pady = 30)
+
+            self.second_window.bind('<Return>', lambda e:(nextLevel() if self.levelStatus == 0 else addProductFnc()))
+
+            CreateToolTip(addProduct, text = '加入到购物车。 快速键 Enter (回车键)，必须要在添加完毕信息才能使用')
+
+        else:
+            self.second_window.focus_force()
+            messagebox.showwarning('关闭', '请先关闭其他小页面')     
+
+
     def auto_repair(self):
         if os.path.isfile('./data/database.db'):
             if os.path.isdir('./data'):
@@ -562,6 +698,11 @@ class AppOpen:
             self.root_window_tableProducts.delete(element)
 
         self.root_window_firstLabelFrame_code.focus()
+
+        # Reset the free products index
+        self.freeProductIndex = 0
+
+
 class AppAdd():
     addProduct_status_level = 0
 
@@ -1288,14 +1429,14 @@ if __name__ == '__main__':
 
         prepare_database()
         os.remove('./data/delete.log')
+        os.startfile('./readme.txt')
 
         messagebox.showinfo('数据', '成功安装系统, 可以使用了。 重新点击文件即可使用')
 
 
 
     else:
-        
+
         newAPP()
-        
         
         

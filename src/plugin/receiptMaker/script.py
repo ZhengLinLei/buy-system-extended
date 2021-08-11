@@ -88,6 +88,7 @@ def ReceiptMaker(object):
                     <h4>IVA INCLUIDO</h4>
                     <h4>GRACIAS POR SU COMPRA</h4>
                     <p class="barcode" style="margin-top: 10px;">**#6#**</p>
+                    <h5>**#6#**</h5>
                 </footer>
             </div>
         </body>
@@ -146,13 +147,3 @@ def ReceiptMaker(object):
     return Template
 
 
-
-print(ReceiptMaker({
-    "product": [
-        ['1.00', 'Coca Cola 1L', '1', '1.00']
-    ],
-    "subtotal": '1.00',
-    "tax": "0.00",
-    "total": '1.00',
-    "id": "01010101010"
-}));

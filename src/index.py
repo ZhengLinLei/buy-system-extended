@@ -636,15 +636,15 @@ class AppOpen:
                                 
             self.second_window.protocol("WM_DELETE_WINDOW", closeSecond_window)
 
-            tk.Label(self.second_window, text = '选择支付方式', anchor = tk.CENTER, font = ('', 18, 'bold')).grid(row = 0, column = 0, columnspan = 2, sticky = tk.W + tk.E, pady = (10, 0))
+            tk.Label(self.second_window, text = '选择支付方式', anchor = tk.CENTER, font = ('', 18, 'bold')).grid(row = 0, column = 1, columnspan = 2, sticky = tk.W + tk.E, pady = (10, 0))
             moneyMethod_pay = tk.Button(self.second_window, text = '现金', padx = 15, pady = 15, font = ('times', 18, 'bold'), command = lambda : self.payAll_priceToFinish('money'))
-            moneyMethod_pay.grid(row = 1, column = 0, padx = 20, pady = (60, 90))
+            moneyMethod_pay.grid(row = 1, column = 0, padx = 20, pady = (60, 50))
             #FastKey
             self.second_window.bind("<F1>", lambda event: self.payAll_priceToFinish('money'))
             CreateToolTip(moneyMethod_pay, text = '快速键: F1')
 
             creditCardMethod_pay = tk.Button(self.second_window, text = '银行卡', padx = 15, pady = 15, font = ('times', 18, 'bold'), command = lambda : self.payAll_priceToFinish('card'))
-            creditCardMethod_pay.grid(row = 1, column = 3, padx = 20, pady = (60, 90))
+            creditCardMethod_pay.grid(row = 1, column = 3, padx = 20, pady = (60, 50))
             #FastKey
             self.second_window.bind("<F2>", lambda event: self.payAll_priceToFinish('card'))
             CreateToolTip(creditCardMethod_pay, text = '快速键: F2')
@@ -652,7 +652,7 @@ class AppOpen:
 
             #Print
             receiptPrint = tk.Button(self.second_window, text = '打印', padx = 15, pady = 15, font = ('times', 18, 'bold'), command = lambda : self.printReceipt())
-            receiptPrint.grid(row = 1, column = 3, padx = 20, pady = (60, 90))
+            receiptPrint.grid(row = 2, column = 2, padx = 20, pady = (30, 40))
             #FastKey
             self.second_window.bind("<F3>", lambda event: self.printReceipt())
             CreateToolTip(receiptPrint, text = '快速键: F3')
@@ -701,20 +701,21 @@ class AppOpen:
     def getLastHistoryRow(self):
         # GET LAST ID
         query = 'SELECT * FROM `Product_register_pay` ORDER BY `id` DESC LIMIT 1;'
-        return run_sqlite_query(query, parameters = ())[0]
-
+        
+        response = run_sqlite_query(query, parameters = ())
+        return response[0] if response else [0, 0]
 
     # Print the receipt
     def printReceipt(self):
 
         id = str(self.getLastHistoryRow()[0]+1)
-        subtotal = self.calc_totalPrice()
+        subtotal = '{:.2f}'.format(float(self.calc_totalPrice()))
         tax = 0.00
 
         dataList = {
             'product': [],
             'subtotal': subtotal,
-            'tax': tax,
+            'tax': str(tax),
             'total': '{:.2f}'.format(float(subtotal) + float(tax)),
             'id': id
         }
@@ -723,7 +724,7 @@ class AppOpen:
             for product in self.root_window_tableProducts.get_children():
                 data_of_product = self.root_window_tableProducts.item(product)
 
-                data = ['{:.2f}'.format(float(data_of_product['values'][1])), data_of_product['values'][0], data_of_product['values'][2], '{:.2f}'.format(float(data_of_product['values'][3]))]
+                data = ['{:.2f}'.format(float(data_of_product['values'][1])), str(data_of_product['values'][0]), str(data_of_product['values'][2]), '{:.2f}'.format(float(data_of_product['values'][3]))]
 
                 dataList['product'].append(data)
 

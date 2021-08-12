@@ -44,7 +44,7 @@ def ReceiptMaker(object):
                     <div class="info">
                         <p>
                             CIF: xxxxxxxxx</br>
-                            Tel. 622745808</br>
+                            Tel. xxxxxxxxx</br>
                         </p>
                     </div>
                 </center>

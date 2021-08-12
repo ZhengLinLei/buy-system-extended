@@ -14,20 +14,21 @@ import sqlite3, json, os
 
 
 # PLUGIN
-import plugin.printerConn.script
+from plugin.printerConn.script import *
 from plugin.receiptMaker.script import ReceiptMaker
 
 # pyinstaller --icon=./dataico.ico --noconsole --add-data './readme.txt;.' --add-data './data/delete.log;data' --add-data './data/ico.ico;data' index.py
 
-db_pathName = './data/database.db'
-backup_pathName = './backup'
+DB_PATHNAME = './data/database.db'
+BACKUP_PATHNAME = './backup'
+TMP_PATHNAME = './tmp'
 
 
 #SQLITE SQL REQUEST
 def run_sqlite_query(query, parameters = ()):
-    global db_pathName
+    global DB_PATHNAME
 
-    with sqlite3.connect(db_pathName) as conection:
+    with sqlite3.connect(DB_PATHNAME) as conection:
         place = conection.cursor()
         response = place.execute(query, parameters)
         conection.commit()
@@ -223,7 +224,7 @@ class AppOpen:
         CreateToolTip(root_window_payButton, text = '可用F12键，快速结账')
 
     def copy_db(self):
-        copy(db_pathName, f"{backup_pathName}/{datetime.today().strftime('%Y-%m-%d')}.db")
+        copy(DB_PATHNAME, f"{BACKUP_PATHNAME}/{datetime.today().strftime('%Y-%m-%d')}.db")
         messagebox.showinfo('备份', '备份完毕')
 
     def open_newWindowConfig(self, type, amounttype = False):
@@ -421,6 +422,7 @@ class AppOpen:
         if os.path.isfile('./data/database.db'):
             if os.path.isdir('./data'):
                 messagebox.showwarning('没有找到错误', '我们没有找到任何错误。 请继续，让后跟着指令手动修复')
+
             else:
                 messagebox.showwarning('找到错误', '我们发现此文件不在真确的地址。 请继续，让后跟着指令手动修复')
 
@@ -642,10 +644,18 @@ class AppOpen:
             CreateToolTip(moneyMethod_pay, text = '快速键: F1')
 
             creditCardMethod_pay = tk.Button(self.second_window, text = '银行卡', padx = 15, pady = 15, font = ('times', 18, 'bold'), command = lambda : self.payAll_priceToFinish('card'))
-            creditCardMethod_pay.grid(row = 1, column = 1, padx = 20, pady = (60, 90))
+            creditCardMethod_pay.grid(row = 1, column = 3, padx = 20, pady = (60, 90))
             #FastKey
             self.second_window.bind("<F2>", lambda event: self.payAll_priceToFinish('card'))
             CreateToolTip(creditCardMethod_pay, text = '快速键: F2')
+
+
+            #Print
+            receiptPrint = tk.Button(self.second_window, text = '打印', padx = 15, pady = 15, font = ('times', 18, 'bold'), command = lambda : self.printReceipt())
+            receiptPrint.grid(row = 1, column = 3, padx = 20, pady = (60, 90))
+            #FastKey
+            self.second_window.bind("<F3>", lambda event: self.printReceipt())
+            CreateToolTip(receiptPrint, text = '快速键: F3')
         else:
             messagebox.showwarning("无法继续", "有别的系统程序开着，请关闭再继续")
             self.second_window.focus_force()
@@ -687,6 +697,56 @@ class AppOpen:
             #Reset system----------
             self.reset_allSystem_toNew()
 
+
+    def getLastHistoryRow(self):
+        # GET LAST ID
+        query = 'SELECT * FROM `Product_register_pay` ORDER BY `id` DESC LIMIT 1;'
+        return run_sqlite_query(query, parameters = ())[0]
+
+
+    # Print the receipt
+    def printReceipt(self):
+
+        id = str(self.getLastHistoryRow()[0]+1)
+        subtotal = self.calc_totalPrice()
+        tax = 0.00
+
+        dataList = {
+            'product': [],
+            'subtotal': subtotal,
+            'tax': tax,
+            'total': '{:.2f}'.format(float(subtotal) + float(tax)),
+            'id': id
+        }
+
+        if self.root_window_tableProducts.get_children():
+            for product in self.root_window_tableProducts.get_children():
+                data_of_product = self.root_window_tableProducts.item(product)
+
+                data = ['{:.2f}'.format(float(data_of_product['values'][1])), data_of_product['values'][0], data_of_product['values'][2], '{:.2f}'.format(float(data_of_product['values'][3]))]
+
+                dataList['product'].append(data)
+
+
+
+        # Create receipt template 
+
+        HtmlText = ReceiptMaker(dataList)
+
+
+        # Print in the printer
+        Printer = PrintHTML(TMP_PATHNAME, options = {
+            'page-height': '210mm',
+            'page-width': '72mm',
+            'encoding': "UTF-8",
+
+        })
+        
+        Printer.addHTML(HtmlText, f'单号:{id}', {})
+
+        # Start printing
+        Printer.printAll()
+                
 
     def reset_allSystem_toNew(self):
         self.second_window.destroy()

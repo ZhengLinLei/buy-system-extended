@@ -16,6 +16,8 @@ import sqlite3, json, os
 # PLUGIN
 from plugin.printerConn.script import *
 from plugin.receiptMaker.script import ReceiptMaker
+from plugin.factMaker.script import FactMaker
+
 
 # pyinstaller --icon=./dataico.ico --noconsole --add-data './readme.txt;.' --add-data './data/delete.log;data' --add-data './data/ico.ico;data' index.py
 
@@ -636,7 +638,7 @@ class AppOpen:
                                 
             self.second_window.protocol("WM_DELETE_WINDOW", closeSecond_window)
 
-            tk.Label(self.second_window, text = '选择支付方式', anchor = tk.CENTER, font = ('', 18, 'bold')).grid(row = 0, column = 1, columnspan = 2, sticky = tk.W + tk.E, pady = (10, 0))
+            tk.Label(self.second_window, text = '选择支付方式', anchor = tk.CENTER, font = ('', 18, 'bold')).grid(row = 0, column = 0, columnspan = 2, sticky = tk.W + tk.E, pady = (10, 0))
             moneyMethod_pay = tk.Button(self.second_window, text = '现金', padx = 15, pady = 15, font = ('times', 18, 'bold'), command = lambda : self.payAll_priceToFinish('money'))
             moneyMethod_pay.grid(row = 1, column = 0, padx = 20, pady = (60, 50))
             #FastKey
@@ -644,21 +646,115 @@ class AppOpen:
             CreateToolTip(moneyMethod_pay, text = '快速键: F1')
 
             creditCardMethod_pay = tk.Button(self.second_window, text = '银行卡', padx = 15, pady = 15, font = ('times', 18, 'bold'), command = lambda : self.payAll_priceToFinish('card'))
-            creditCardMethod_pay.grid(row = 1, column = 3, padx = 20, pady = (60, 50))
+            creditCardMethod_pay.grid(row = 1, column = 1, padx = 20, pady = (60, 50))
             #FastKey
             self.second_window.bind("<F2>", lambda event: self.payAll_priceToFinish('card'))
             CreateToolTip(creditCardMethod_pay, text = '快速键: F2')
 
 
+            tk.Label(self.second_window, text = '打印方式', anchor = tk.CENTER, font = ('', 18, 'bold')).grid(row = 2, column = 0, columnspan = 2, sticky = tk.W + tk.E, pady = (10, 0))
             #Print
             receiptPrint = tk.Button(self.second_window, text = '打印', padx = 15, pady = 15, font = ('times', 18, 'bold'), command = lambda : self.printReceipt())
-            receiptPrint.grid(row = 2, column = 2, padx = 20, pady = (30, 40))
+            receiptPrint.grid(row = 3, column = 0, padx = 20, pady = (30, 40))
             #FastKey
             self.second_window.bind("<F3>", lambda event: self.printReceipt())
             CreateToolTip(receiptPrint, text = '快速键: F3')
+
+            #Print
+            billPrint = tk.Button(self.second_window, text = '打印 F', padx = 15, pady = 15, font = ('times', 18, 'bold'), command = lambda : self.printBillEmpty())
+            billPrint.grid(row = 3, column = 1, padx = 20, pady = (30, 40))
+            #FastKey
+            self.second_window.bind("<F4>", lambda event: self.printBillEmpty())
+            CreateToolTip(billPrint, text = '快速键: F4')
         else:
             messagebox.showwarning("无法继续", "有别的系统程序开着，请关闭再继续")
             self.second_window.focus_force()
+
+
+
+    def printBillEmpty(self):
+
+        self.levelStatus = 0
+
+
+        self.bill_window = tk.Toplevel(self.root_window)
+        self.bill_window.focus_force()
+        self.bill_window.title('Factura')
+
+        def closeSecond_window():
+            self.bill_windowOpen = False
+            self.second_window.focus()
+            self.bill_window.destroy()
+                                
+        self.bill_window.protocol("WM_DELETE_WINDOW", closeSecond_window)
+
+        #Title
+        tk.Label(self.bill_window, text = '生成 Factura', font = ('times', 18), anchor = tk.CENTER).grid(row = 0, column = 0, columnspan = 2, sticky = tk.W + tk.E)
+        #---------------------------------
+        second_window_firstLabelFrame = tk.LabelFrame(self.bill_window, text = '输入客人资料', padx = 20, pady = 20)
+        second_window_firstLabelFrame.grid(row = 1, column = 0, pady = 30, columnspan = 2, sticky = tk.W + tk.E, padx = 20)
+
+        #name
+        tk.Label(second_window_firstLabelFrame, text = '名字: ', font = ('', 14, 'bold')).grid(row = 0, column = 0, padx = (0, 15))
+        second_window_firstLabelName = tk.Entry(second_window_firstLabelFrame, width = 50)
+        second_window_firstLabelName.grid(row = 0, column = 1, padx = 5)
+
+        second_window_firstLabelName.focus_force()
+
+        #DOC
+        tk.Label(second_window_firstLabelFrame, text = 'NIF: ', font = ('', 14, 'bold')).grid(row = 1, column = 0, padx = (0, 15))
+        second_window_firstLabelDoc = tk.Entry(second_window_firstLabelFrame, width = 50)
+        second_window_firstLabelDoc.grid(row = 1, column = 1, padx = 5)
+
+        #Address
+        tk.Label(second_window_firstLabelFrame, text = '地址: ', font = ('', 14, 'bold')).grid(row = 2, column = 0, padx = (0, 15))
+        second_window_firstLabelAddress = tk.Entry(second_window_firstLabelFrame, width = 50)
+        second_window_firstLabelAddress.grid(row = 2, column = 1, padx = 5)
+        
+        #Tel
+        tk.Label(second_window_firstLabelFrame, text = '电话: ', font = ('', 14, 'bold')).grid(row = 3, column = 0, padx = (0, 15))
+        second_window_firstLabelTel = tk.Entry(second_window_firstLabelFrame, width = 50)
+        second_window_firstLabelTel.grid(row = 3, column = 1, padx = 5)
+
+
+
+        def getData():
+            arr = []
+
+            arrEl = [second_window_firstLabelName, second_window_firstLabelDoc, second_window_firstLabelAddress, second_window_firstLabelTel]
+
+            for el in arrEl:
+                arr.append(el.get())
+
+
+            return arr
+
+
+        #-----------------------
+        def nextLevel():
+            if self.levelStatus == 0:
+                second_window_firstLabelDoc.focus()
+            elif self.levelStatus == 1:
+                second_window_firstLabelAddress.focus()
+            elif self.levelStatus == 2:
+                second_window_firstLabelTel.focus()
+            elif self.levelStatus == 3:
+                self.printBill(getData())
+
+            self.levelStatus = self.levelStatus +1
+
+
+        number_continue_frame = tk.Frame(self.bill_window)
+        number_continue_frame.grid(row = 2, column = 1, padx = 5, pady = 30, sticky = tk.W + tk.E + tk.N + tk.S)
+
+        billButton = tk.Button(number_continue_frame, text = '生成', cursor = 'hand2', font = ('', 10, 'bold'), width = 10, command = lambda : self.printBill(getData()))
+        billButton.pack(pady = 30)
+
+        self.bill_window.bind('<Return>', lambda e: nextLevel())
+
+        CreateToolTip(billButton, text = '<Enter> 生成 Factura')
+
+
 
     def payAll_priceToFinish(self, typeOf):
         #Create a datetime 
@@ -705,8 +801,8 @@ class AppOpen:
         response = run_sqlite_query(query, parameters = ())
         return response[0] if response else [0, 0]
 
-    # Print the receipt
-    def printReceipt(self):
+
+    def printBase(self):
 
         id = str(self.getLastHistoryRow()[0]+1)
         subtotal = '{:.2f}'.format(float(self.calc_totalPrice()))
@@ -729,6 +825,13 @@ class AppOpen:
                 dataList['product'].append(data)
 
 
+        return dataList
+
+
+    # Print the receipt
+    def printReceipt(self):
+
+        dataList = self.printBase()
 
         # Create receipt template 
 
@@ -748,6 +851,31 @@ class AppOpen:
         # Start printing
         Printer.printAll()
                 
+    def printBill(self, data):
+
+        dataList = self.printBase()
+        dataList['name'] = data[0]
+        dataList['nif'] = data[1]
+        dataList['address'] = data[2]
+        dataList['tel'] = data[3]
+
+
+        # Create bill template
+
+        HtmlText = FactMaker(dataList)
+
+        # Print in the printer
+        Printer = PrintHTML(TMP_PATHNAME, options = {
+            'page-height': '210mm',
+            'page-width': '72mm',
+            'encoding': "UTF-8",
+
+        })
+        
+        Printer.addHTML(HtmlText, f'Factura:{id}', {})
+
+        # Start printing
+        Printer.printAll()
 
     def reset_allSystem_toNew(self):
         self.second_window.destroy()

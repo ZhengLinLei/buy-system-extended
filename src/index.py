@@ -862,17 +862,19 @@ class AppOpen:
 
         # Create bill template
 
-        HtmlText = FactMaker(dataList)
-
-        # Print in the printer
-        Printer = PrintHTML(TMP_PATHNAME, options = {
+        Options = {
             'page-height': '210mm',
             'page-width': '72mm',
             'encoding': "UTF-8",
 
-        })
+        }
+
+
+        # Print in the printer
+        Printer = PrintHTML(TMP_PATHNAME, options = Options)
         
-        Printer.addHTML(HtmlText, f'Factura:{id}', {})
+        Printer.addHTML(FactMaker(dataList, True), f'Factura:{id}', {})
+        Printer.addHTML(FactMaker(dataList, False), f'Factura复制:{id}', {})
 
         # Start printing
         Printer.printAll()

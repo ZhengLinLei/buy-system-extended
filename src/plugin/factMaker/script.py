@@ -24,7 +24,7 @@ from datetime import datetime
 #     tel: 'xxxx'
 # }
 
-def FactMaker(object):
+def FactMaker(object, comment):
 
 
     Template = '''
@@ -68,7 +68,7 @@ def FactMaker(object):
                             <p>Num. factura: **#6#**</p>
                             <p>Fecha emision: **#1#**</p>
                             <p>Hora emision: **#0#**</p>
-                            <p>Emitido por: xxxxxx</p>
+                            <p>Emitido para: xxxxxx</p>
                         </div>
                     </div>
                 </center>
@@ -122,6 +122,9 @@ def FactMaker(object):
                         <h4>Firma o cuño</h4>
                         <div style="height: 90px;margin:20px 0;border: 1px solid black;"></div>
                     </div>
+                    <p>
+                        **#11#**
+                    </p>
                 </footer>
             </div>
         </body>
@@ -172,7 +175,8 @@ def FactMaker(object):
         object['name'],
         object['nif'],
         object['address'] if object['address'] else '',
-        object['tel'] if object['tel'] else 'No añadir'
+        object['tel'] if object['tel'] else 'No añadir',
+        'Copia para remitente 1/2' if comment else 'Copia para emisor 2/2' 
     ]
 
     for i, v in enumerate(Input_order):

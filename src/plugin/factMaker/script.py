@@ -76,6 +76,9 @@ def FactMaker(object, comment):
                     <div id="table">
                         <table>
                             <tr class="tabletitle">
+                                <td class="amount">
+                                    <h5>CANT.</h5>
+                                </td>
                                 <td class="item">
                                     <h5>PRE.</h5>
                                 </td>
@@ -109,8 +112,17 @@ def FactMaker(object, comment):
                     </div>
                 </div>
                 <footer style="margin: 20px 0; text-align: center;">
-                    <h4>IVA INCLUIDO (21%)</h4>
-                    <h4>FACTURA EMITIDA</h4>
+                    <h4>**#14#**</h4>
+                    <div style="margin: 20px 0 50px 0;">
+                        <div style="display: flex; justify-content: space-around;">
+                            <div><b>Pagado: </b> **#12#** €</div>
+                            <div><b>Cambio: </b> **#13#** €</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-around;margin-top: 10px;">
+                            <div><b>Precio bruto:</b> **#15#** €</div>
+                            <div><b>IVA (21%):</b> **#16#** €</div>
+                        </div>
+                    </div>
                     <p class="barcode" style="margin-top: 10px;">**#6#**</p>
                     <h5>**#6#**</h5>
                     <div style="margin: 50px 0; text-align:justify; font-size: 12px; color: rgb(49, 48, 48);">
@@ -136,15 +148,18 @@ def FactMaker(object, comment):
     
                     <tr class="service">
                         <td class="tableitem">
-                            <p class="itemtext">**#0#**</p>
+                            <p class="itemtext">**#4#** x</p>
+                        </td>
+                        <td class="tableitem">
+                            <p class="itemtext">**#3#**</p>
                         </td>
                         <td class="tableitem">
                             <p class="itemtext">
-                                <p><b>**#1#**</b> x **#2#**</p>
+                                <p>**#1#**</p>
                             </p>
                         </td>
                         <td class="tableitem right">
-                            <p class="itemtext">**#3#**</p>
+                            <p class="itemtext">**#5#**</p>
                         </td>
                     </tr>
 
@@ -152,21 +167,24 @@ def FactMaker(object, comment):
 
     HTML_text = ''
 
-    for prod in object['product']:
+    for prod in object['product']['data']:
 
         template = Prod_template
 
-        for index, value in enumerate(prod):
+        for index, value in enumerate(prod.values()):
 
-            template = template.replace(f'**#{index}#**', value)
+            value = '{:.2f}'.format(float(value)) if index == 3 or index == 5 else str(value)
+
+            template = template.replace(f'**#{index}#**', str(value))
 
 
         HTML_text += template
 
+    DATETIME = datetime.strptime(object['datetime'], '%Y-%m-%d %H:%M:%S')
 
     Input_order = [
-        datetime.today().strftime('%H : %M'),
-        datetime.today().strftime('%Y-%m-%d'),
+        DATETIME.strftime('%H : %M'),
+        DATETIME.strftime('%Y-%m-%d'),
         HTML_text,
         object['subtotal'],
         object['tax'],
@@ -176,8 +194,26 @@ def FactMaker(object, comment):
         object['nif'],
         object['address'] if object['address'] else '',
         object['tel'] if object['tel'] else 'No añadir',
-        'Copia para remitente 1/2' if comment else 'Copia para emisor 2/2' 
+        'Copia para remitente 1/2' if comment else 'Copia para emisor 2/2',
+        object['pay_price'],
+        object['change_price'],
+        'EFECTIVO' if object['method_pay'] == 'money' else 'TARJETA CREDITO/DEBITO',
+        object['nettotal'],
+        object['iva']
     ]
+
+    #'datetime': self.data[1],
+    #'product': self.data[2],
+    #'subtotal': str(subtotal),
+    #'tax': str(tax),
+    #'total': str(total),
+    #'id': id,
+    #'nettotal': str(nettotal),
+    #'iva': str(iva),
+    #'pay_price': pay_price,
+    #'change_price': change_price,
+    #'total_amount': total_amount,
+    #'method_pay': self.data[5]
 
     for i, v in enumerate(Input_order):
 

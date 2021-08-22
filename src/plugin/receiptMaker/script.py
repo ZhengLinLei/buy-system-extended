@@ -52,6 +52,9 @@ def ReceiptMaker(object):
                     <div id="table">
                         <table>
                             <tr class="tabletitle">
+                                <td class="amount">
+                                    <h5>CANT.</h5>
+                                </td>
                                 <td class="item">
                                     <h5>PRE.</h5>
                                 </td>
@@ -62,6 +65,7 @@ def ReceiptMaker(object):
                                     <h5>SUMA</h5>
                                 </td>
                             </tr>
+                            <tr class="tabletitle">
 
                             **#2#**
                             
@@ -85,6 +89,13 @@ def ReceiptMaker(object):
                     </div>
                 </div>
                 <footer style="margin: 20px 0; text-align: center;">
+                    <h4>**#9#**</h4>
+                    <div style="margin: 20px 0 50px 0;">
+                        <div style="display: flex; justify-content: space-around;">
+                            <div><b>Pagado: </b> **#7#** €</div>
+                            <div><b>Cambio: </b> **#8#** €</div>
+                        </div>
+                    </div>
                     <h4>IVA INCLUIDO</h4>
                     <h4>GRACIAS POR SU COMPRA</h4>
                     <p class="barcode" style="margin-top: 10px;">**#6#**</p>
@@ -101,15 +112,18 @@ def ReceiptMaker(object):
     
                     <tr class="service">
                         <td class="tableitem">
-                            <p class="itemtext">**#0#**</p>
+                            <p class="itemtext">**#4#** x</p>
+                        </td>
+                        <td class="tableitem">
+                            <p class="itemtext">**#3#**</p>
                         </td>
                         <td class="tableitem">
                             <p class="itemtext">
-                                <p><b>**#1#**</b> x **#2#**</p>
+                                <p>**#1#**</p>
                             </p>
                         </td>
                         <td class="tableitem right">
-                            <p class="itemtext">**#3#**</p>
+                            <p class="itemtext">**#5#**</p>
                         </td>
                     </tr>
 
@@ -117,11 +131,13 @@ def ReceiptMaker(object):
 
     HTML_text = ''
 
-    for prod in object['product']:
+    for prod in object['product']['data']:
 
         template = Prod_template
 
-        for index, value in enumerate(prod):
+        for index, value in enumerate(prod.values()):
+
+            value = '{:.2f}'.format(float(value)) if index == 3 or index == 5 else str(value)            
 
             template = template.replace(f'**#{index}#**', value)
 
@@ -129,15 +145,33 @@ def ReceiptMaker(object):
         HTML_text += template
 
 
+    DATETIME = datetime.strptime(object['datetime'], '%Y-%m-%d %H:%M:%S')
+
     Input_order = [
-        datetime.today().strftime('%H : %M'),
-        datetime.today().strftime('%Y-%m-%d'),
+        DATETIME.strftime('%H : %M'),
+        DATETIME.strftime('%Y-%m-%d'),
         HTML_text,
         object['subtotal'],
         object['tax'],
         object['total'],
-        object['id']
+        object['id'],
+        object['pay_price'],
+        object['change_price'],
+        'EFECTIVO' if object['method_pay'] == 'money' else 'TARJETA CREDITO/DEBITO'
     ]
+
+    #'datetime': self.data[1],
+    #'product': self.data[2],
+    #'subtotal': str(subtotal),
+    #'tax': str(tax),
+    #'total': str(total),
+    #'id': id,
+    #'nettotal': str(nettotal),
+    #'iva': str(iva),
+    #'pay_price': pay_price,
+    #'change_price': change_price,
+    #'total_amount': total_amount,
+    #'method_pay': self.data[5]
 
     for i, v in enumerate(Input_order):
 

@@ -112,10 +112,10 @@ def ReceiptMaker(object):
     
                     <tr class="service">
                         <td class="tableitem">
-                            <p class="itemtext">**#4#** x</p>
+                            <p class="itemtext">**#3#** x</p>
                         </td>
                         <td class="tableitem">
-                            <p class="itemtext">**#3#**</p>
+                            <p class="itemtext">**#4#**</p>
                         </td>
                         <td class="tableitem">
                             <p class="itemtext">
@@ -137,7 +137,7 @@ def ReceiptMaker(object):
 
         for index, value in enumerate(prod.values()):
 
-            value = '{:.2f}'.format(float(value)) if index == 3 or index == 5 else str(value)            
+            value = '{:.2f}'.format(float(value)) if index == 4 or index == 5 else str(value)            
 
             template = template.replace(f'**#{index}#**', value)
 

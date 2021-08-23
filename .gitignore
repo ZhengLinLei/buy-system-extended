@@ -2,3 +2,6 @@ test
 __pycache__
 database.db
 gg.html
+test.py
+sql.py
+html.html

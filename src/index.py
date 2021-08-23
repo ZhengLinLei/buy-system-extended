@@ -485,7 +485,7 @@ class AppOpen:
 
                 tk.Label(div_creator, text = '开发者: 郑林磊', anchor = tk.W, font = ('times', 12, 'bold')).pack(fill = tk.BOTH)
                 tk.Label(div_creator, text = '邮件: zheng9112003@gmail.com', anchor = tk.W).pack(fill = tk.BOTH)
-                tk.Label(div_creator, text = '版本 1.3 2021年', anchor = tk.W).pack(fill = tk.BOTH)
+                tk.Label(div_creator, text = '版本 1.3.1 2021年', anchor = tk.W).pack(fill = tk.BOTH)
         else:
             if type == 'amount_product':
                 if self.root_window_firstLabelFrame_code.get() != "" and self.root_window_firstLabelFrame_code.get().isnumeric():
@@ -1111,15 +1111,18 @@ class AppOpen:
             elif self.levelStatus == 2:
                 second_window_firstLabelTel.focus()
             elif self.levelStatus == 3:
-                PrintApp.printBill(getData())
+                printBill()
 
             self.levelStatus = self.levelStatus +1
-
+        
+        def printBill():
+            PrintApp.printBill(getData())
+            closeSecond_window()
 
         number_continue_frame = tk.Frame(self.bill_window)
         number_continue_frame.grid(row = 2, column = 1, padx = 5, pady = 30, sticky = tk.W + tk.E + tk.N + tk.S)
 
-        billButton = tk.Button(number_continue_frame, text = '生成', cursor = 'hand2', font = ('', 10, 'bold'), width = 10, command = lambda : self.printBill(getData()))
+        billButton = tk.Button(number_continue_frame, text = '生成', cursor = 'hand2', font = ('', 10, 'bold'), width = 10, command = lambda : printBill())
         billButton.pack(pady = 30)
 
         self.bill_window.bind('<Return>', lambda e: nextLevel())
@@ -1983,15 +1986,18 @@ class AppHistory():
             elif self.levelStatus == 2:
                 second_window_firstLabelTel.focus()
             elif self.levelStatus == 3:
-                PrintApp.printBill(getData())
+                printBill()
 
             self.levelStatus = self.levelStatus +1
 
+        def printBill():
+            PrintApp.printBill(getData())
+            closeSecond_window()
 
         number_continue_frame = tk.Frame(self.bill_window)
         number_continue_frame.grid(row = 2, column = 1, padx = 5, pady = 30, sticky = tk.W + tk.E + tk.N + tk.S)
 
-        billButton = tk.Button(number_continue_frame, text = '生成', cursor = 'hand2', font = ('', 10, 'bold'), width = 10, command = lambda : self.printBill(getData()))
+        billButton = tk.Button(number_continue_frame, text = '生成', cursor = 'hand2', font = ('', 10, 'bold'), width = 10, command = lambda : printBill())
         billButton.pack(pady = 30)
 
         self.bill_window.bind('<Return>', lambda e: nextLevel())

@@ -235,10 +235,12 @@ class PrintPrepair:
         # Print in the printer
         Printer = PrintHTML(TMP_PATHNAME, options = self.options)
         
-        Printer.addHTML(HtmlText, f'小票:{id}', {})
+        Printer.addHTML(HtmlText, f'小票:{dataList["id"]}', {})
 
         # Start printing
         Printer.printAll()
+        
+        Printer = '' 
                 
     def printBill(self, data):
 
@@ -255,11 +257,13 @@ class PrintPrepair:
         # Print in the printer
         Printer = PrintHTML(TMP_PATHNAME, options = self.options)
         
-        Printer.addHTML(FactMaker(dataList, True), f'发票:{id}', {})
-        Printer.addHTML(FactMaker(dataList, False), f'发票复制:{id}', {})
+        Printer.addHTML(FactMaker(dataList, True), f'发票:{dataList["id"]}', {})
+        Printer.addHTML(FactMaker(dataList, False), f'发票复制:{dataList["id"]}', {})
 
         # Start printing
         Printer.printAll()
+        
+        Printer = '' 
 
 
 
@@ -279,7 +283,7 @@ class AppOpen:
         
         # self.root_window.iconbitmap('@./data/ico.ico')
 
-        self.root_window.iconbitmap('./data/ico.ico')
+        # self.root_window.iconbitmap('./data/ico.ico')
 
 
         self.root_window.bind("<F11>", lambda event: self.toggle_fullScreen())
@@ -351,10 +355,10 @@ class AppOpen:
         self.root_window_firstLabelFrame_code.focus()
 
         #LabelFrame > button
-        add_productsFase1Button = tk.Button(self.root_window_firstLabelFrame, text = '加入', command = lambda : self.open_newWindowConfig('amount_product'))
+        add_productsFase1Button = tk.Button(self.root_window_firstLabelFrame, text = '加入', command = lambda : self.secondWindow_addToPay(self.root_window_firstLabelFrame_code.get(), str(1)))
         add_productsFase1Button.grid(row = 1, column = 0, sticky = tk.W + tk.E, pady = (10, 0))
 
-        self.root_window.bind("<Return>", lambda event: self.open_newWindowConfig('amount_product'))
+        self.root_window.bind("<Return>", lambda event: self.secondWindow_addToPay(self.root_window_firstLabelFrame_code.get(), str(1)))
         CreateToolTip(add_productsFase1Button, text = '扫完码请加入到购物廊, 按Enter键可快速加入 <回车键>')
 
         #Table Div Frame
@@ -725,8 +729,9 @@ class AppOpen:
 
                 if return_ifAdded:
                     child_toDelete = self.root_window_tableProducts.item(return_ifAdded)
+
                     #----------
-                    amount_number = int(child_toDelete['values'][2]) + int(amount)
+                    amount_number = int(child_toDelete['values'][3]) + int(amount)
                     #------------------------
                     self.root_window_tableProducts.delete(return_ifAdded)
 
@@ -742,8 +747,7 @@ class AppOpen:
 
             self.root_window_firstLabelFrame_code.delete(0, tk.END)
             self.root_window_firstLabelFrame_code.focus()
-            self.second_window.destroy()
-            self.second_windowOpen = False
+            
 
     def checkProduct_added_before(self, code):
         allChilds = self.root_window_tableProducts.get_children()
@@ -974,20 +978,28 @@ class AppOpen:
                 self.second_window.destroy()
                                 
             self.second_window.protocol("WM_DELETE_WINDOW", closeSecond_window)
+            
+            def printOption(option=True):
+            	if option:
+            		PrintApp.printReceipt()
+            	else:
+            		self.printBillEmpty(id)
+            		
+            	closeSecond_window()
 
             tk.Label(self.second_window, text = '打印方式', anchor = tk.CENTER, font = ('', 18, 'bold')).grid(row = 0, column = 0, columnspan = 2, sticky = tk.W + tk.E, pady = (10, 0))
             #Print
-            receiptPrint = tk.Button(self.second_window, text = '打印小票', padx = 15, pady = 15, font = ('times', 12, 'bold'), command = lambda : PrintApp.printReceipt(), cursor = 'hand2')
+            receiptPrint = tk.Button(self.second_window, text = '打印小票', padx = 15, pady = 15, font = ('times', 12, 'bold'), command = lambda : printOption(True), cursor = 'hand2')
             receiptPrint.grid(row = 1, column = 0, padx = 20, pady = (30, 40))
             #FastKey
-            self.second_window.bind("<F1>", lambda event: PrintApp.printReceipt())
+            self.second_window.bind("<F1>", lambda event: printOption(True))
             CreateToolTip(receiptPrint, text = '快速键: F1')
 
             #Print
-            billPrint = tk.Button(self.second_window, text = '打印发票', padx = 15, pady = 15, font = ('times', 12, 'bold'), command = lambda : self.printBillEmpty(id), cursor = 'hand2')
+            billPrint = tk.Button(self.second_window, text = '打印发票', padx = 15, pady = 15, font = ('times', 12, 'bold'), command = lambda : printOption(False), cursor = 'hand2')
             billPrint.grid(row = 1, column = 1, padx = 20, pady = (30, 40))
             #FastKey
-            self.second_window.bind("<F2>", lambda event: self.printBillEmpty(id))
+            self.second_window.bind("<F2>", lambda event: printOption(False))
             CreateToolTip(billPrint, text = '快速键: F2')
 
             #----------------------------------
@@ -1387,7 +1399,7 @@ class AppChange():
         second_frame = tk.Frame(self.root_window)
         second_frame.grid(row = 2, column = 0)
 
-        self.showProduct_table = ttk.Treeview(second_frame, columns = ("name", "primePrice", "price", "category"), selectmode = tk.EXTENDED, height = 28)
+        self.showProduct_table = ttk.Treeview(second_frame, columns = ("name", "primePrice", "price", "category"), selectmode = tk.EXTENDED, height = 25)
         #Prepare
         self.showProduct_table.heading('#0', text = '条码', anchor = tk.CENTER)
         self.showProduct_table.column("#0", width = int(self.root_window.winfo_screenwidth()/5), stretch = False)
@@ -1417,7 +1429,7 @@ class AppChange():
         changeButton.grid(row = 0, column = 0, padx = 10, pady = (10, 20))
         #FastKey
         self.root_window.bind("<F7>", lambda event: self.change_product_fromDB())
-        CreateToolTip(changeButton, text = '快速键: F10', pos='up')
+        CreateToolTip(changeButton, text = '快速键: F7', pos='up')
 
         deleteButton = tk.Button(third_frame, text = '删除 <F8>', padx = 25, cursor = 'hand2', command = self.delete_product_fromDB)
         deleteButton.grid(row = 0, column = 1, padx = 10, pady = (10, 20))
@@ -1737,7 +1749,7 @@ class AppHistory():
         second_frame = tk.Frame(self.root_window)
         second_frame.grid(row = 0, column = 1)
 
-        self.showHistory_searched = ttk.Treeview(second_frame, columns = ("date_time", "total_price", "number_product", "method_pay"), selectmode = tk.EXTENDED, height = 31)
+        self.showHistory_searched = ttk.Treeview(second_frame, columns = ("date_time", "total_price", "number_product", "method_pay"), selectmode = tk.EXTENDED, height = 32)
         #Prepare
         self.showHistory_searched.heading('#0', text = 'id', anchor = tk.CENTER)
         self.showHistory_searched.column("#0", width = 230, stretch = False)
@@ -1896,12 +1908,17 @@ class AppHistory():
         tk.Label(second_frame, text = '总共 : {:.2f}'.format(totalPrice), font = ('', 10, 'bold')).grid(row = 1, column = 2, padx = 40, pady = (10, 100))
         tk.Label(second_frame, text = '实付 : {:.2f}'.format(parameters[6]), font = ('', 10, 'bold')).grid(row = 1, column = 3, padx = 40, pady = (10, 100))
         # -----------------
-        PrintApp = PrintPrepair(parameters[0])
+        def printReceipt():
+            PrintApp = PrintPrepair(parameters[0])
+            
+            PrintApp.printReceipt()
+            
+            
         #Print
-        receiptPrint = tk.Button(second_frame, text = '打印小票 F1', padx = 10, pady = 5, font = ('', 10), command = lambda : PrintApp.printReceipt(), cursor = 'hand2')
+        receiptPrint = tk.Button(second_frame, text = '打印小票 F1', padx = 10, pady = 5, font = ('', 10), command = lambda : printReceipt(), cursor = 'hand2')
         receiptPrint.grid(row = 0, column = 4, padx = (50, 10), pady = (50, 10))
         #FastKey
-        self.second_window.bind("<F1>", lambda event: PrintApp.printReceipt())
+        self.second_window.bind("<F1>", lambda event: printReceipt())
         CreateToolTip(receiptPrint, text = '快速键: F1')
 
         #Print

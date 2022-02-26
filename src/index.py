@@ -12,7 +12,7 @@ from datetime import datetime
 from shutil import Error, copy
 
 
-import sqlite3, json, subprocess, os, platform
+import sqlite3, json, subprocess, os, platform, glob
 
 
 # PLUGIN
@@ -2144,6 +2144,11 @@ if __name__ == '__main__':
     else:
 
         check_auto_backup() # FIRST BACKUP
+        # REMOVE TMP
+        files = glob.glob('./tmp/*')
+        for f in files:
+            os.remove(f)
+
         newAPP()
         
         

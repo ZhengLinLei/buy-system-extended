@@ -980,13 +980,14 @@ class AppOpen:
             self.second_window.protocol("WM_DELETE_WINDOW", closeSecond_window)
             
             def printOption(option=True):
-            	if option:
-            		PrintApp.printReceipt()
-            	else:
-            		self.printBillEmpty(id)
-            		
-            	closeSecond_window()
+                if option:
+                    PrintApp.printReceipt()
 
+                else:
+                    self.printBillEmpty(id)
+
+                closeSecond_window()
+            
             tk.Label(self.second_window, text = '打印方式', anchor = tk.CENTER, font = ('', 18, 'bold')).grid(row = 0, column = 0, columnspan = 2, sticky = tk.W + tk.E, pady = (10, 0))
             #Print
             receiptPrint = tk.Button(self.second_window, text = '打印小票', padx = 15, pady = 15, font = ('times', 12, 'bold'), command = lambda : printOption(True), cursor = 'hand2')
